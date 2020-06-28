@@ -10,7 +10,7 @@ import (
 )
 
 // HealthHandler displays health status of the service.
-// Status OK (200) is returned if service is working as expected.
+// Status NoContent (204) is returned if service is working as expected.
 // Status InternalServerError (500) is returned in case of general errors.
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	if err := service.Health(); err != nil {
@@ -24,6 +24,8 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 
 // HelloHandler says hello
 // Status OK (200) is returned for successfuly saying hello.
+// Status NotAcceptable (406) is returned for unacceptable input.
+// Status UnprocessableEntity (422) is returned for invalid input.
 // Status InternalServerError (500) is returned in case of general errors.
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
 	length := len(rts.HelloRoute)
@@ -34,16 +36,20 @@ func HelloHandler(w http.ResponseWriter, r *http.Request) {
 
 	msgString, err := service.Hello(usernameString)
 	if err != nil {
+		status := http.StatusInternalServerError
 		callstack.LogErrStack(err)
+
 		if errors.Is(err, service.ErrHello) {
+			status = http.StatusNotAcceptable
 			err = service.ErrHello
 		} else if errors.Is(err, service.ErrInvalidString) {
+			status = http.StatusUnprocessableEntity
 			err = service.ErrInvalidString
 		} else {
-			err = errors.New("Internal Server Error")
+			err = errInternalServerError
 		}
 
-		errorResponse(w, err, http.StatusInternalServerError)
+		errorResponse(w, err, status)
 		return
 	}
 
@@ -51,7 +57,7 @@ func HelloHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(&msg)
 	if err != nil {
 		callstack.LogErrStack(err)
-		errorResponse(w, errors.New("Internal Server Error"), http.StatusInternalServerError)
+		errorResponse(w, errInternalServerError, http.StatusInternalServerError)
 		return
 	}
 

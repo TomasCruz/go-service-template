@@ -44,6 +44,14 @@ paths:
           description: "saying hello sucessfull"
           schema:
             $ref: "#/definitions/Msg"
+        406:
+          description: "unacceptable input"
+          schema:
+            $ref: "#/definitions/Err"
+        422:
+          description: "invalid input"
+          schema:
+            $ref: "#/definitions/Err"
         500:
           description: "internal server error"
           schema:

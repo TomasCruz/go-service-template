@@ -5,19 +5,21 @@ Go web service template
 ### /health/
 displays service health status
 
-#### Return codes:
-- OK (200) if service is working as expected
-- InternalServerError (500) in case of general errors
+#### Response codes and content:
+- NoContent (204) if service is working as expected
+- InternalServerError (500) in case of general errors, JSON body containing errorMessage
 
 ### /hello/
-saying hello to the user, using a name passed as input. If name is "*", request fails with InternalServerError. If there is no input, response message is "hello world"
+saying hello to the user, using a name passed as input. If name is "*", request fails with NotAcceptable. If name is not a valid UTF-8 string, request fails with UnprocessableEntity. If there is no input, response message is "hello world"
 
 #### input
 path variable containing the username
 
-#### Return codes:
-- OK (200) for successfuly saying hello
-- InternalServerError (500) in case of general errors
+#### Response codes and content:
+- OK (200) for successfuly saying hello, JSON body containing message
+- NotAcceptable (406) for unacceptable input, JSON body containing errorMessage
+- UnprocessableEntity (422) for invalid input, JSON body containing errorMessage
+- InternalServerError (500) in case of general errors, JSON body containing errorMessage
 
 ## Build
 From terminal, run 'source ./env' then 'make'

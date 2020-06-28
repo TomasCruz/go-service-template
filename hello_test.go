@@ -52,7 +52,7 @@ func TestInvalidString(t *testing.T) {
 	assert.NilError(t, err)
 	defer resp.Body.Close()
 
-	assert.Assert(t, 500 == resp.StatusCode)
+	assert.Assert(t, 422 == resp.StatusCode)
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	assert.NilError(t, err)
@@ -76,7 +76,7 @@ func TestStar(t *testing.T) {
 	assert.NilError(t, err)
 	defer resp.Body.Close()
 
-	assert.Assert(t, 500 == resp.StatusCode)
+	assert.Assert(t, 406 == resp.StatusCode)
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	assert.NilError(t, err)
