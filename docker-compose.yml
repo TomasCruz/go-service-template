@@ -1,0 +1,10 @@
+version: "3"
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - TEMPLATE_SVC_PORT=4337
+    ports:
+      - "4337:${TEMPLATE_SVC_PORT}"

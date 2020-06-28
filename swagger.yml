@@ -1,0 +1,63 @@
+swagger: "2.0"
+info:
+  description: "go-service-template server is saying hello to the user in a JSON message"
+  version: "1.0.0"
+  title: "go-service-template"
+  license:
+    name: "MIT"
+    url: "http://www.opensource.org/licenses/MIT"
+tags:
+- name: "health"
+- name: "hello"
+schemes:
+- "https"
+- "http"
+paths:
+  /health:
+    get:
+      tags:
+      - "health"
+      summary: "verify server is up and running"
+      responses:
+        204:
+          description: "up and running"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/Err"
+  /hello:
+    get:
+      tags:
+      - "hello"
+      summary: "saying hello to the user"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "name"
+        description: "hello message for a given user"
+        required: false
+      responses:
+        200:
+          description: "saying hello sucessfull"
+          schema:
+            $ref: "#/definitions/Msg"
+        500:
+          description: "internal server error"
+          schema:
+            $ref: "#/definitions/Err"
+definitions:
+  Msg:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "A message"
+  Err:
+    type: "object"
+    properties:
+      errorMessage:
+        type: "string"
+        example: "A horrible, terrible, absolutely awful error"
