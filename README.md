@@ -1,5 +1,5 @@
 # go-service-template
-a web service saying hello
+Go web service template
 
 ## API
 ### /health/
