@@ -2,8 +2,9 @@ package presenter
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 
 	"github.com/TomasCruz/go-service-template/callstack"
 	"github.com/TomasCruz/go-service-template/service"
@@ -14,7 +15,7 @@ import (
 // Status InternalServerError (500) is returned in case of general errors.
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	if err := service.Health(); err != nil {
-		callstack.LogErrStack(err)
+		callstack.PrintErrStack(err)
 		errorResponse(w, nil, http.StatusInternalServerError)
 		return
 	}
@@ -28,23 +29,25 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 // Status UnprocessableEntity (422) is returned for invalid input.
 // Status InternalServerError (500) is returned in case of general errors.
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	length := len(rts.HelloRoute)
-	usernameString := r.URL.Path[length:]
-	if len(usernameString) > 0 && usernameString[len(usernameString)-1] == '/' {
-		usernameString = usernameString[:len(usernameString)-1]
-	}
+	retHandler := routeStorer(
+		rts.HelloRoute, userNameExtractor(
+			utf8Validator(
+				hello)))
 
-	msgString, err := service.Hello(usernameString)
+	retHandler(w, r)
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+	iUsername := r.Context().Value(ctxKey("username"))
+	username := iUsername.(string)
+
+	msgString, err := service.Hello(username)
 	if err != nil {
-		status := http.StatusInternalServerError
-		callstack.LogErrStack(err)
+		callstack.PrintErrStack(err)
 
+		status := http.StatusInternalServerError
 		if errors.Is(err, service.ErrHello) {
 			status = http.StatusNotAcceptable
-			err = service.ErrHello
-		} else if errors.Is(err, service.ErrInvalidString) {
-			status = http.StatusUnprocessableEntity
-			err = service.ErrInvalidString
 		} else {
 			err = errInternalServerError
 		}
@@ -56,7 +59,7 @@ func HelloHandler(w http.ResponseWriter, r *http.Request) {
 	msg := MsgStruct{Msg: msgString}
 	data, err := json.Marshal(&msg)
 	if err != nil {
-		callstack.LogErrStack(err)
+		callstack.PrintErrStack(err)
 		errorResponse(w, errInternalServerError, http.StatusInternalServerError)
 		return
 	}

@@ -25,8 +25,3 @@ func TestToma(t *testing.T) {
 
 	assert.Assert(t, "hello Toma" == msg)
 }
-
-func TestInvalid(t *testing.T) {
-	_, err := Hello("\xD0\x9D\xD0\xB8\xD0\xBA\xD0\xBE\xD0\xBB\xD0")
-	assert.Assert(t, errors.Is(err, ErrInvalidString))
-}

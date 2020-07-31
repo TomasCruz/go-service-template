@@ -21,7 +21,6 @@ func bindRoutes(routesStruct routes.Routes) {
 	http.HandleFunc(routesStruct.HealthRoute, healthHandlerFunc)
 
 	// hello
-	helloHandlerFunc := presenter.DummyMiddleware(
-		presenter.HelloHandler)
+	helloHandlerFunc := presenter.HelloHandler
 	http.HandleFunc(routesStruct.HelloRoute, helloHandlerFunc)
 }

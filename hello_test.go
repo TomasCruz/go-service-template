@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -52,7 +53,7 @@ func TestInvalidString(t *testing.T) {
 	assert.NilError(t, err)
 	defer resp.Body.Close()
 
-	assert.Assert(t, 422 == resp.StatusCode)
+	assert.Assert(t, http.StatusNotAcceptable == resp.StatusCode)
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	assert.NilError(t, err)
@@ -61,7 +62,8 @@ func TestInvalidString(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &errStruct)
 	assert.NilError(t, err)
 
-	assert.Assert(t, service.ErrInvalidString.Error() == errStruct.Msg)
+	expectedErrMsg := "username: " + presenter.ErrInvalidString.Error()
+	assert.Assert(t, errStruct.Msg == expectedErrMsg)
 }
 
 func TestStar(t *testing.T) {
@@ -76,7 +78,7 @@ func TestStar(t *testing.T) {
 	assert.NilError(t, err)
 	defer resp.Body.Close()
 
-	assert.Assert(t, 406 == resp.StatusCode)
+	assert.Assert(t, http.StatusNotAcceptable == resp.StatusCode)
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	assert.NilError(t, err)
@@ -85,5 +87,5 @@ func TestStar(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &errStruct)
 	assert.NilError(t, err)
 
-	assert.Assert(t, service.ErrHello.Error() == errStruct.Msg)
+	assert.Assert(t, strings.Contains(errStruct.Msg, service.ErrHello.Error()) == true)
 }
