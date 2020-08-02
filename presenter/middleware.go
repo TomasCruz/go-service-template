@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
+	"github.com/TomasCruz/go-service-template/callstack"
 	"github.com/pkg/errors"
 )
 
@@ -19,10 +20,12 @@ func routeStorer(route string, h http.HandlerFunc) http.HandlerFunc {
 
 func userNameExtractor(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		iRoute := ctx.Value(ctxKey("route"))
-		route, ok := interfaceToString(iRoute, w)
-		if !ok {
+		keyString := "route"
+		iRoute := r.Context().Value(ctxKey(keyString))
+		route, status, err := interfaceToString(iRoute, keyString)
+		if err != nil {
+			callstack.PrintErrStack(err)
+			errorResponse(w, err, status)
 			return
 		}
 
@@ -39,15 +42,18 @@ func userNameExtractor(h http.HandlerFunc) http.HandlerFunc {
 
 func utf8Validator(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		iUsername := r.Context().Value(ctxKey("username"))
-		username, ok := interfaceToString(iUsername, w)
-		if !ok {
+		keyString := "username"
+		iUsername := r.Context().Value(ctxKey(keyString))
+		username, status, err := interfaceToString(iUsername, keyString)
+		if err != nil {
+			callstack.PrintErrStack(err)
+			errorResponse(w, err, status)
 			return
 		}
 
 		if !utf8.ValidString(username) {
 			status := http.StatusNotAcceptable
-			err := errors.Wrap(ErrInvalidString, "username")
+			err := errors.Wrap(ErrInvalidString, keyString)
 			errorResponse(w, err, status)
 			return
 		}
@@ -56,13 +62,11 @@ func utf8Validator(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func interfaceToString(i interface{}, w http.ResponseWriter) (iString string, ok bool) {
-	iString, ok = i.(string)
+func interfaceToString(i interface{}, key string) (s string, status int, err error) {
+	s, ok := i.(string)
 	if !ok {
-		status := http.StatusInternalServerError
-		err := errors.Wrap(errMissingDependecy, "route")
-		errorResponse(w, err, status)
-		return
+		status = http.StatusInternalServerError
+		err = errors.Wrap(errMissingDependecy, key)
 	}
 
 	return
